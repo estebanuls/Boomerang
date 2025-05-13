@@ -2,13 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-def trayectoria_boomerang():
-
-
-    radio_inicial = 5.0
-    velocidad_angular = 1.0
-    amortiguamiento = 0.1
-    tiempo_maximo = 10.0  # Tiempo máximo de la simulación
+def trayectoria_boomerang(radio_inicial, velocidad_angular, amortiguamiento, tiempo_maximo):
+  # Tiempo máximo de la simulación
     fps = 30
     intervalo_milisegundos = 1000 / fps
 
@@ -43,4 +38,12 @@ def trayectoria_boomerang():
     plt.show()
 
 if __name__ == '__main__':
-    trayectoria_boomerang()
+    try:
+        radio = float(input("ingresar radio inicial: "))
+        velocidad = float(input("ingresa velocidad angular: "))
+        amort = float(input("ingresa el coeficiente de amortiguamiento: "))
+        tiempo = float(input("ingresa el tiempo maximo de la simulacion: "))
+    except ValueError:
+        print("ingresa los valores numericos validos.")
+    else:
+        trayectoria_boomerang(radio, velocidad, amort, tiempo)
