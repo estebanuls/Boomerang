@@ -43,21 +43,58 @@ def simular_boomerang(dist_max, tiempo, dist_caida):
         linea.set_data([], [])
         return linea,
 
+def simular_boomerang(dist_max, tiempo, dist_caida):
+    r, w_inicial, a = calcular_parametros(dist_max, tiempo, dist_caida)
+
+
+    # Tiempo final// se asume que el radio decrese de igual forma que la velocidad angular
+    w_final = w_inicial * np.exp(-a * tiempo) #misma formula de la ecuacion diferencial
+
+    print("\nParámetros calculados:")
+    print(f"radio inicial (r): {r:.2f} m")
+    print(f"velocidad angular inicial (w): {w_inicial:.4f} rad/s")
+    print(f"Velocidad angular final estimada (w): {w_final:.4f} rad/s")
+    print(f"Coeficiente de amortiguamiento (a): {a:.6f} 1/s")
+    print("------------------------------------------------")
+
+    fps = 30
+    intervalo = 1000 / fps
+    t_max = tiempo
+
+    fig, ax = plt.subplots(figsize=(7.68, 7.68))
+    limite = (dist_max)*0.6
+    ax.set_xlim(-limite, limite)
+    ax.set_ylim(-limite, limite)
+    ax.set_xlabel('Posición en X (m)')
+    ax.set_ylabel('Posición en Y (m)')
+    ax.set_title('Simulación Boomerang')
+    ax.grid(True)
+    ax.axhline(0, color='black', linewidth=0.5)
+    ax.axvline(0, color='black', linewidth=0.5)
+    ax.set_aspect('equal', adjustable='box')
+
+    linea, = ax.plot([], [], 'b-', lw=2)
+
+    def init():
+        linea.set_data([], [])
+        return linea,
+
     def animate(i):
         t = np.linspace(0, t_max * i / 100, 500)
 
+        # se hace que la velocidad angular varie//w_real es la velocidad angular en cada momento durante su vuelo
+        w_real = w_inicial * np.exp(-a * t)
         dt = np.gradient(t)
-        theta = np.cumsum(w * dt)
+        theta = np.cumsum(w_real * dt)
 
         #hacer que no parezca un "circulo perfecto"
         r_var = r * (1 - 0.35 * np.sin(theta / 2))
 
 
-        estirar_x = 1.08
-        estirar_y = 1.0
+        elongacion_x = 1.08
 
-        x = r_var * estirar_x * np.cos(theta) * np.exp(-a * t)
-        y = r_var * estirar_y * np.sin(theta) * np.exp(-a * t)
+        x = r_var * elongacion_x * np.cos(theta) * np.exp(-a * t)
+        y = r_var * np.sin(theta) * np.exp(-a * t)
 
         linea.set_data(x, y)
         return linea,
