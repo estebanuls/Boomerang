@@ -7,62 +7,20 @@ def calcular_parametros(dist_max, tiempo, dist_caida):
     r_final = (dist_max - dist_caida) / 2
     w = 2 * np.pi / tiempo
     a = - (1 / tiempo) * np.log(r_final / r) #despeje de la ecuacion diferencial
+    w_final = w * np.exp(-a * tiempo) # Tiempo final// se asume que el radio decrese de igual forma que la velocidad angular
+    return r, w, a,w_final
 
-    return r, w, a
-
-def simular_boomerang(dist_max, tiempo, dist_caida):
-    r, w, a = calcular_parametros(dist_max, tiempo, dist_caida)
-
-
-
+def imprimir_datos(r,w,a,w_final):
+  
     print("\nParámetros calculados:")
     print(f"radio inicial (r): {r:.2f} m")
-    print(f"velocidad angular promedio: {w:.4f} rad/s")
-    print(f"Coeficiente de amortiguamiento (a): {a:.6f} 1/s")
-    print("------------------------------------------------")
-
-    fps = 30
-    intervalo = 1000 / fps
-    t_max = tiempo
-
-    fig, ax = plt.subplots(figsize=(7.68, 7.68))
-    limite = (dist_max)*0.6
-    ax.set_xlim(-limite, limite)
-    ax.set_ylim(-limite, limite)
-    ax.set_xlabel('Posición en X (m)')
-    ax.set_ylabel('Posición en Y (m)')
-    ax.set_title('Simulación Boomerang')
-    ax.grid(True)
-    ax.axhline(0, color='black', linewidth=0.5)
-    ax.axvline(0, color='black', linewidth=0.5)
-    ax.set_aspect('equal', adjustable='box')
-
-    linea, = ax.plot([], [], 'b-', lw=2)
-
-    def init():
-        linea.set_data([], [])
-        return linea,
-
-def simular_boomerang(dist_max, tiempo, dist_caida):
-    r, w_inicial, a = calcular_parametros(dist_max, tiempo, dist_caida)
-
-
-    # Tiempo final// se asume que el radio decrese de igual forma que la velocidad angular
-    w_final = w_inicial * np.exp(-a * tiempo) #misma formula de la ecuacion diferencial
-
-    print("\nParámetros calculados:")
-    print(f"radio inicial (r): {r:.2f} m")
-    print(f"velocidad angular inicial (w): {w_inicial:.4f} rad/s")
+    print(f"velocidad angular inicial estimada (w): {w:.4f} rad/s")
     print(f"Velocidad angular final estimada (w): {w_final:.4f} rad/s")
     print(f"Coeficiente de amortiguamiento (a): {a:.6f} 1/s")
-    print("------------------------------------------------")
-
-    fps = 30
-    intervalo = 1000 / fps
-    t_max = tiempo
-
+    
+def crear_lienzo(dist_max):
     fig, ax = plt.subplots(figsize=(7.68, 7.68))
-    limite = (dist_max)*0.6
+    limite = dist_max * 0.6
     ax.set_xlim(-limite, limite)
     ax.set_ylim(-limite, limite)
     ax.set_xlabel('Posición en X (m)')
@@ -72,8 +30,22 @@ def simular_boomerang(dist_max, tiempo, dist_caida):
     ax.axhline(0, color='black', linewidth=0.5)
     ax.axvline(0, color='black', linewidth=0.5)
     ax.set_aspect('equal', adjustable='box')
+    return fig, ax
 
-    linea, = ax.plot([], [], 'b-', lw=2)
+def simular_boomerang(dist_max, tiempo, dist_caida):
+    r, w, a, w_final = calcular_parametros(dist_max, tiempo, dist_caida)
+
+    imprimir_datos(r,w,a,w_final)
+    fps = 30
+    intervalo = 1000 / fps
+    t_max = tiempo
+
+    fig, ax = crear_lienzo(dist_max)
+
+    linea, = ax.plot([], [], 'b', lw=2)
+    punto_inicio, = ax.plot([], [], 'ro', markersize=6, label='Inicio')  # rojo
+    punto_final, = ax.plot([], [], 'go', markersize=6, label='Final')    # verde
+
 
     def init():
         linea.set_data([], [])
@@ -83,7 +55,7 @@ def simular_boomerang(dist_max, tiempo, dist_caida):
         t = np.linspace(0, t_max * i / 100, 500)
 
         # se hace que la velocidad angular varie//w_real es la velocidad angular en cada momento durante su vuelo
-        w_real = w_inicial * np.exp(-a * t)
+        w_real = w * np.exp(-a * t)
         dt = np.gradient(t)
         theta = np.cumsum(w_real * dt)
 
@@ -92,16 +64,17 @@ def simular_boomerang(dist_max, tiempo, dist_caida):
 
 
         elongacion_x = 1.08
-
+        
         x = r_var * elongacion_x * np.cos(theta) * np.exp(-a * t)
         y = r_var * np.sin(theta) * np.exp(-a * t)
 
         linea.set_data(x, y)
-        return linea,
+        punto_inicio.set_data(x[0], y[0])
+        punto_final.set_data(x[-1], y[-1])
 
-    anim = animation.FuncAnimation(
-        fig, animate, init_func=init,
-        frames=100, interval=intervalo, blit=True, repeat=False
+        return linea, punto_inicio, punto_final
+
+    bumeran = animation.FuncAnimation(fig, animate, init_func=init, frames=100, interval=intervalo, blit=True, repeat=False
     )
 
     plt.show()
