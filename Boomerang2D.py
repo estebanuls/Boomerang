@@ -6,7 +6,7 @@ def calcular_parametros(dist_max, tiempo, dist_caida):
     r = dist_max/2
     r_final = (dist_max - dist_caida) / 2
     w = 2 * np.pi / tiempo
-    a = - (1 / tiempo) * np.log(r_final / r) #despeje de la ecuacion diferencial
+    a = - (1 / tiempo) * np.log(r_final / r) #despeje de la ecuacion diferencial   r(t)=r0*e^-kt
     w_final = w * np.exp(-a * tiempo) # Tiempo final// se asume que el radio decrese de igual forma que la velocidad angular
     return r, w, a,w_final
 
@@ -27,8 +27,8 @@ def crear_lienzo(dist_max):
     ax.set_ylabel('Posición en Y (m)')
     ax.set_title('Simulación Boomerang')
     ax.grid(True)
-    ax.axhline(0, color='black', linewidth=0.5)
-    ax.axvline(0, color='black', linewidth=0.5)
+    ax.axhline(0, color='black', linewidth=1)
+    ax.axvline(0, color='black', linewidth=1)
     ax.set_aspect('equal', adjustable='box')
     return fig, ax
 
@@ -36,9 +36,9 @@ def simular_boomerang(dist_max, tiempo, dist_caida):
     r, w, a, w_final = calcular_parametros(dist_max, tiempo, dist_caida)
 
     imprimir_datos(r,w,a,w_final)
+    
     fps = 30
     intervalo = 1000 / fps
-    t_max = tiempo
 
     fig, ax = crear_lienzo(dist_max)
 
@@ -46,13 +46,12 @@ def simular_boomerang(dist_max, tiempo, dist_caida):
     punto_inicio, = ax.plot([], [], 'ro', markersize=6, label='Inicio')  # rojo
     punto_final, = ax.plot([], [], 'go', markersize=6, label='Final')    # verde
 
-
     def init():
         linea.set_data([], [])
         return linea,
 
     def animate(i):
-        t = np.linspace(0, t_max * i / 100, 500)
+        t = np.linspace(0, tiempo* i / 100, 500)
 
         # se hace que la velocidad angular varie//w_real es la velocidad angular en cada momento durante su vuelo
         w_real = w * np.exp(-a * t)
