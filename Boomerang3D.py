@@ -82,8 +82,8 @@ def simular_boomerang_3d(dist_max, tiempo, dist_caida, amplitud_vertical):
 
         r_deform = r * (1 - 0.15 * np.sin(2 * theta_real))
 
-        x_real = r_deform * elongacion_x * np.cos(theta_real)
-        y_real = r_deform * np.sin(theta_real)
+        x_real = r_deform * elongacion_x * np.cos(theta_real)* np.exp(-a * t)
+        y_real = r_deform * np.sin(theta_real)* np.exp(-a * t)
         z_real = a_z * np.sin(np.pi * t / t_max)
 
         linea_ideal.set_data(x_ideal, y_ideal)
@@ -115,5 +115,4 @@ if __name__ == '__main__':
     if dist_caida >= dist_max:
         print("\nError: La distancia de caída debe ser menor que la distancia máxima.")
         exit()
-
     simular_boomerang_3d(dist_max, tiempo, dist_caida, amplitud_vertical)
