@@ -8,7 +8,8 @@ def calcular_parametros(dist_max, tiempo, dist_caida):
     r_final = (dist_max - dist_caida) / 2
     w = 2 * np.pi / tiempo
     a = - (1 / tiempo) * np.log(r_final / r)
-    return r, w, a
+    w_final = w * np.exp(-a * tiempo)
+    return r, w, a, w_final
 
 def dibujar_elipsoide(ax, centro, radios, color='blue', alpha=0.5):
     u = np.linspace(0, 2 * np.pi, 30)
@@ -19,12 +20,13 @@ def dibujar_elipsoide(ax, centro, radios, color='blue', alpha=0.5):
     ax.plot_surface(x, y, z, color=color, alpha=alpha)
 
 def simular_boomerang_3d(dist_max, tiempo, dist_caida, amplitud_vertical):
-    r, w_inicial, a = calcular_parametros(dist_max, tiempo, dist_caida)
+    r, w, a, w_final = calcular_parametros(dist_max, tiempo, dist_caida)
     a_z = amplitud_vertical
 
     print("\nParámetros calculados:")
     print(f"Radio inicial (r): {r:.2f} m")
-    print(f"Velocidad angular inicial (w): {w_inicial:.4f} rad/s")
+    print(f"Velocidad angular inicial (w): {w:.4f} rad/s")
+    print(f"Velocidad angular final estimada (w_final): {w_final:.4f} rad/s")
     print(f"Coeficiente de amortiguamiento (a): {a:.6f} 1/s")
     print(f"Amplitud vertical (a_z): {a_z:.2f} m")
     print("------------------------------------------------")
@@ -69,21 +71,21 @@ def simular_boomerang_3d(dist_max, tiempo, dist_caida, amplitud_vertical):
     def animate(i):
         t = np.linspace(0, t_max * i / 100, 500)
 
-        theta_ideal = w_inicial * t
+        theta_ideal = w * t
         r_ideal = r
 
         x_ideal = r_ideal * elongacion_x * np.cos(theta_ideal)
         y_ideal = r_ideal * np.sin(theta_ideal)
         z_ideal = a_z * np.sin(np.pi * t / t_max)
 
-        w_real = w_inicial * np.exp(-a * t)
+        w_real = w * np.exp(-a * t)
         dt = np.gradient(t)
         theta_real = np.cumsum(w_real * dt)
 
         r_deform = r * (1 - 0.15 * np.sin(2 * theta_real))
 
-        x_real = r_deform * elongacion_x * np.cos(theta_real)* np.exp(-a * t)
-        y_real = r_deform * np.sin(theta_real)* np.exp(-a * t)
+        x_real = r_deform * elongacion_x * np.cos(theta_real) * np.exp(-a * t)
+        y_real = r_deform * np.sin(theta_real) * np.exp(-a * t)
         z_real = a_z * np.sin(np.pi * t / t_max)
 
         linea_ideal.set_data(x_ideal, y_ideal)
@@ -115,4 +117,5 @@ if __name__ == '__main__':
     if dist_caida >= dist_max:
         print("\nError: La distancia de caída debe ser menor que la distancia máxima.")
         exit()
+
     simular_boomerang_3d(dist_max, tiempo, dist_caida, amplitud_vertical)
